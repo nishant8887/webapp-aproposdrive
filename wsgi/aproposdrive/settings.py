@@ -10,11 +10,16 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+
+ON_OPENSHIFT = False
+if 'OPENSHIFT_REPO_DIR' in os.environ:
+    ON_OPENSHIFT = True
+
 DJ_PROJECT_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(DJ_PROJECT_DIR)
 WSGI_DIR = os.path.dirname(BASE_DIR)
 REPO_DIR = os.path.dirname(BASE_DIR)
-DATA_DIR = os.environ.get('OPENSHIFT_DATA_DIR', BASE_DIR)
+DATA_DIR = os.environ.get('OPENSHIFT_DATA_DIR', os.path.join(BASE_DIR, 'data'))
 
 import sys
 sys.path.append(os.path.join(REPO_DIR, 'libs'))
@@ -28,7 +33,10 @@ SECRETS = secrets.getter(os.path.join(DATA_DIR, 'secrets.json'))
 SECRET_KEY = SECRETS['secret_key']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG') == 'True'
+if ON_OPENSHIFT:
+    DEBUG = os.environ.get('DEBUG') == 'True'
+else:
+    DEBUG = True
 
 from socket import gethostname
 ALLOWED_HOSTS = [
@@ -82,7 +90,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 import urlparse
@@ -128,3 +135,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(WSGI_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(os.environ.get('OPENSHIFT_DATA_DIR', DATA_DIR), 'media')

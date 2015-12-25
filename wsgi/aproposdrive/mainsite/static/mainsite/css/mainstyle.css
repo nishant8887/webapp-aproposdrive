@@ -1,0 +1,15 @@
+.main-title {
+    height: 77px;
+    padding: 0px;
+    background-image: linear-gradient(rgb(86, 61, 124) 0px, rgb(111, 84, 153) 100%);
+}
+
+.main-title h1 {
+    margin-left: 15px;
+    color: #FFF;
+}
+
+.main-content h2 {
+    margin-top: 150px;
+    text-align: center;
+}

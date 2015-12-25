@@ -15,8 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.views.generic import RedirectView
+from django.conf import settings
 
 urlpatterns = [
+    url(r'^favicon.ico/$', RedirectView.as_view(url=settings.STATIC_URL + 'mainsite/images/favicon.ico', permanent=True)),
     url(r'^$', include('mainsite.urls')),
     url(r'^admin/', include(admin.site.urls)),
 ]
