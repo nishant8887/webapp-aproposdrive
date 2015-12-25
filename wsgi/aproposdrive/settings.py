@@ -85,9 +85,22 @@ WSGI_APPLICATION = 'wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
+import urlparse
 
-DATABASES = {
-    'default': {
+DATABASES = {}
+if 'OPENSHIFT_POSTGRESQL_DB_URL' in os.environ:
+    url = urlparse.urlparse(os.environ.get('OPENSHIFT_POSTGRESQL_DB_URL'))
+
+    DATABASES['default'] = {
+        'ENGINE' : 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ['OPENSHIFT_APP_NAME'],
+        'USER': url.username,
+        'PASSWORD': url.password,
+        'HOST': url.hostname,
+        'PORT': url.port,
+    }
+else:
+    DATABASES['default'] = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'aproposdrive',
         'USER': 'root',
@@ -95,7 +108,6 @@ DATABASES = {
         'HOST': '',
         'PORT': '',
     }
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
