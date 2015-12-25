@@ -17,7 +17,7 @@ if 'OPENSHIFT_REPO_DIR' in os.environ:
 
 DJ_PROJECT_DIR = os.path.dirname(__file__)
 BASE_DIR = os.path.dirname(DJ_PROJECT_DIR)
-WSGI_DIR = os.path.dirname(BASE_DIR)
+WSGI_DIR = os.path.join(os.path.dirname(BASE_DIR), 'wsgi')
 REPO_DIR = os.path.dirname(BASE_DIR)
 DATA_DIR = os.environ.get('OPENSHIFT_DATA_DIR', os.path.join(BASE_DIR, 'data'))
 
