@@ -1,77 +1,86 @@
-Django on OpenShift
-===================
+Development Setup
+=================
 
-This git repository helps you get up and running quickly w/ a Django
-installation on OpenShift.  The Django project name used in this repo
-is 'myproject' but you can feel free to change it.  Right now the
-backend is sqlite3 and the database runtime is found in
-`$OPENSHIFT_DATA_DIR/db.sqlite3`.
+Install git, python2.7, virtualenvwrapper, python-pip, postgres using apt-get
 
-Before you push this app for the first time, you will need to change
-the [Django admin password](#admin-user-name-and-password).
-Then, when you first push this
-application to the cloud instance, the sqlite database is copied from
-`wsgi/myproject/db.sqlite3` with your newly changed login
-credentials. Other than the password change, this is the stock
-database that is created when `python manage.py syncdb` is run with
-only the admin app installed.
+For development:
 
-On subsequent pushes, a `python manage.py syncdb` is executed to make
-sure that any models you added are created in the DB.  If you do
-anything that requires an alter table, you could add the alter
-statements in `GIT_ROOT/.openshift/action_hooks/alter.sql` and then use
-`GIT_ROOT/.openshift/action_hooks/deploy` to execute that script (make
-sure to back up your database w/ `rhc app snapshot save` first :) )
+Fetch the repository and set upstream
 
-You can also turn on the DEBUG mode for Django application using the
-`rhc env set DEBUG=True --app APP_NAME`. If you do this, you'll get
-nicely formatted error pages in browser for HTTP 500 errors.
+    git clone git@github.com:nishant8887/webapp-aproposdrive.git
+    git remote add upstream ssh://567d174f89f5cffebf0001d6@webapp-aproposdrive.rhcloud.com/~/git/webapp.git/
 
-Do not forget to turn this environment variable off and fully restart
-the application when you finish:
+Install postgres and change access method to "trust" in
 
-```
-$ rhc env unset DEBUG
-$ rhc app stop && rhc app start
-```
+    /etc/postgresql/<version>/main/pg_hba.conf
 
-Running on OpenShift
---------------------
+Make postgres settings as follows
 
-Create an account at https://www.openshift.com
+    psql -U postgres
 
-Install the RHC client tools if you have not already done so:
-    
-    sudo gem install rhc
-    rhc setup
+in postgres shell
 
-Select the version of python (2.7 or 3.3) and create a application
+    CREATE USER root;
+    ALTER ROLE root WITH SUPERUSER;
+    ALTER ROLE root WITH CREATEUSER;
+    ALTER ROLE root WITH CREATEDB;
+    ALTER ROLE root WITH REPLICATION;
 
-    rhc app create django python-$VERSION
+List all users and check if root has all previleges
 
-Add this upstream repo
+    \du
 
-    cd django
-    git remote add upstream -m master git://github.com/openshift/django-example.git
-    git pull -s recursive -X theirs upstream master
+Exit postgres shell
 
-Then push the repo upstream
+    \q   
 
-    git push
+Get into your repo directory
 
-Now, you have to create [admin account](#admin-user-name-and-password), so you 
-can setup your Django instance.
-	
-That's it. You can now checkout your application at:
+    mkvirtualenv aproposdrive
+    cd wsgi
+    pip install -r requirements.txt
 
-    http://django-$yournamespace.rhcloud.com
+Create database and migrate initial schema
 
-Admin user name and password
-----------------------------
-Use `rhc ssh` to log into python gear and run this command:
+    createdb -U root root
+    createdb -U root aproposdrive
+    cd aproposdrive
+    python manage.py migrate
 
-	python $OPENSHIFT_REPO_DIR/wsgi/myproject/manage.py createsuperuser
+Check if everyting is working fine
 
-You should be now able to login at:
+    python manage.py runserver
 
-	http://django-$yournamespace.rhcloud.com/admin/
+visit in browser
+
+    http://localhost:8000
+
+Make changes and then push the repo upstream
+
+    git push origin master
+    git push upstream master (to deploy)
+
+Jenkins:
+========
+
+Jenkins deployed at url
+
+    https://jenkins-aproposdrive.rhcloud.com/
+
+SSH:
+====
+
+You can ssh to check on the instance
+
+    ssh 567d174f89f5cffebf0001d6@webapp-aproposdrive.rhcloud.com
+
+To create a superuser
+
+    python $OPENSHIFT_REPO_DIR/wsgi/aproposdrive/manage.py createsuperuser
+
+Website:
+========
+
+Visit website url at
+
+    http://webapp-aproposdrive.rhcloud.com/
